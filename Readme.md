@@ -41,7 +41,7 @@ curl -X POST http://localhost:8000/api/token/ \
 Utilisez ensuite ce token dans toutes vos requêtes :
 
 ```bash
-curl -H "Authorization: Token abc123..." http://localhost:8000/api/users/
+curl -H "Authorization: Bearer abc123..." http://localhost:8000/api/users/
 ```
 
 ## Endpoints de l'API
