@@ -70,6 +70,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'api.middleware.RequestLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'miniMDM.urls'
@@ -138,3 +139,85 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+
+# Configuration du logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    
+    'formatters': {
+        'verbose': {
+            'format': '[{levelname}] {asctime} | {name} | {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'simple': {
+            'format': '[{levelname}] {message}',
+            'style': '{',
+        },
+    },
+    
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file_requests': {
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/app/logs/api_requests.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+        'file_errors': {
+            'level': 'ERROR',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': '/app/logs/errors.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
+    },
+    
+    'loggers': {
+        # Logger pour les requêtes API
+        'api.requests': {
+            'handlers': ['console', 'file_requests'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        # Logger pour Django général
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        # Logger pour les erreurs Django
+        'django.request': {
+            'handlers': ['console', 'file_errors'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        # Logger pour notre application
+        'mdm': {
+            'handlers': ['console', 'file_requests'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+    },
+    
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}

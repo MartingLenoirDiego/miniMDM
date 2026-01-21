@@ -143,6 +143,50 @@ curl -H "Authorization: Token abc123..." \
 5. **django-filter** : Pour le filtrage par Fleet sans code custom
    - Extensible facilement pour d'autres filtres
 
+## Logging des Requêtes API
+
+### Vue d'ensemble
+
+L'application inclut un système de logging complet via un middleware personnalisé qui enregistre automatiquement toutes les interactions avec l'API.
+
+**Ce qui est loggé :**
+  - **Requêtes entrantes** : Méthode HTTP, URL, utilisateur, IP cliente
+  - **Corps des requêtes** : Pour POST/PUT/PATCH (avec masquage des données sensibles)
+  - **Réponses** : Status code, temps de traitement
+  - **Erreurs détaillées** : Stack traces complètes pour le debugging
+  - **Exceptions** : Toutes les erreurs non gérées
+
+**Exemple de sortie :**
+```
+[INFO] 2025-01-21 14:32:15 | api.requests | [REQUEST] POST /api/auth/token/ | User: Anonymous | IP: 172.18.0.1
+[DEBUG] 2025-01-21 14:32:15 | api.requests | [REQUEST BODY] {"username": "admin", "password": "***MASKED***"}
+[INFO] 2025-01-21 14:32:15 | api.requests | [RESPONSE] POST /api/auth/token/ | Status: 200 | User: Anonymous | Duration: 0.145s
+[INFO] 2025-01-21 14:33:22 | api.requests | [REQUEST] POST /api/fleets/ | User: admin | IP: 172.18.0.1
+[INFO] 2025-01-21 14:33:22 | api.requests | [RESPONSE] POST /api/fleets/ | Status: 201 | User: admin | Duration: 0.089s
+```
+
+### Fichiers de logs persistants
+
+Les logs sont automatiquement sauvegardés dans le dossier `logs/` de votre projet :
+
+```
+~/mini-MDM-API/
+├── logs/
+│   ├── api_requests.log    # Toutes les requêtes (INFO+)
+│   └── errors.log          # Uniquement les erreurs (ERROR uniquement)
+```
+
+### Niveaux de log
+
+Les logs sont automatiquement catégorisés par niveau selon le status HTTP :
+
+| Status Code | Niveau | Destination |
+|-------------|--------|-------------|
+| **200-299** | `INFO` | Console + api_requests.log |
+| **400-499** | `WARNING` | Console + api_requests.log |
+| **500+** | `ERROR` | Console + api_requests.log + errors.log |
+
+
 ## Améliorations Possibles
 
 
